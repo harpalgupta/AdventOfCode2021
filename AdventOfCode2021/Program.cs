@@ -8,6 +8,81 @@ namespace AdventOfCode2021
     {
         static void Main(string[] args)
         {
+            //Day1();
+            Day2();
+        }
+        private static void Day2()
+        {
+            //Day2Part1();
+            Day2Part2();
+        }
+
+        private static void Day2Part1()
+        {
+            var day2Input = System.IO.File.ReadAllLines("Day2Input.txt");
+            var horizontalTotal = 0;
+            var depthTotal = 0;
+            foreach (var input in day2Input)
+            {
+                var splitPos = input.Split(' ');
+                if (splitPos[0] == "forward")
+                {
+                    horizontalTotal += int.Parse(splitPos[1]);
+                }
+                else if (splitPos[0] == "down")
+                {
+                    depthTotal += int.Parse(splitPos[1]);
+
+                }
+                else if (splitPos[0] == "up")
+                {
+                    depthTotal -= int.Parse(splitPos[1]);
+
+                }
+
+            }
+            Console.WriteLine(horizontalTotal * depthTotal);
+            Console.ReadKey();
+        }
+
+        private static void Day2Part2()
+        {
+            var day2Input = System.IO.File.ReadAllLines("Day2Input.txt");
+            var horizontalTotal = 0;
+            var depthTotal = 0;
+            var aim = 0;
+            foreach (var input in day2Input)
+            {
+                var splitPos = input.Split(' ');
+                if (splitPos[0] == "forward")
+                {
+                    var properAim = Math.Abs(aim) == 0 ? 1 : Math.Abs(aim);
+                    horizontalTotal += int.Parse(splitPos[1]) * properAim;
+                    horizontalTotal += int.Parse(splitPos[1]);
+                    Console.WriteLine($"{ int.Parse(splitPos[1])} * {properAim} ");
+                }
+                else if (splitPos[0] == "down")
+                {
+                    depthTotal += int.Parse(splitPos[1]);
+                    aim -= int.Parse(splitPos[1]);
+
+
+                }
+                else if (splitPos[0] == "up")
+                {
+                    depthTotal -= int.Parse(splitPos[1]);
+                    aim += int.Parse(splitPos[1]);
+
+                }
+
+            }
+            Console.WriteLine($"{horizontalTotal} * {depthTotal}");
+            Console.WriteLine(horizontalTotal * depthTotal);
+            Console.ReadKey();
+        }
+
+        private static void Day1()
+        {
             var day1Input = System.IO.File.ReadAllLines("Day1Input.txt");
             var sonarInputs = day1Input.Select(d => int.Parse(d));
             Part1(sonarInputs.ToArray());
