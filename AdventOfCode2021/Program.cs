@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AdventOfCode2021
 {
@@ -11,7 +12,7 @@ namespace AdventOfCode2021
             //Day1();
             //Day2();
             Day3();
-
+            Console.ReadKey();
         }
         private static void Day2()
         {
@@ -24,17 +25,25 @@ namespace AdventOfCode2021
 
         private static void Day3()
         {
+            Day3Part2();
+        }
+
+        private static void Day3Part1()
+        {
             var day3Input = System.IO.File.ReadAllLines("Day3Input.txt");
 
             var lines = new List<int[]>();
 
-            string gammaRate = string.Empty;
+            var gammaRate = new StringBuilder();
+            var epsilonRate = new StringBuilder();
+            var countOf1Bits = new int[0];
 
             foreach (var input in day3Input)
             {
                 lines.Add(input.ToCharArray().Select(i => int.Parse(i.ToString())).ToArray());
+                countOf1Bits = new int[input.Length];
+
             }
-            var countOf1Bits = new int[5];
 
             foreach (var line in lines)
             {
@@ -52,18 +61,76 @@ namespace AdventOfCode2021
 
             foreach (var item in countOf1Bits)
             {
-                if (item > lines.Count / 2)
+                if (item > (lines.Count / 2))
                 {
                     gammaRate.Append('1');
+                    epsilonRate.Append('0');
                 }
                 else
                 {
                     gammaRate.Append('0');
+                    epsilonRate.Append('1');
                 }
+            }
+
+            var gammaRateConvertedInt = Convert.ToInt32(gammaRate.ToString(), 2);
+            var epsilonRateConvertedInt = Convert.ToInt32(epsilonRate.ToString(), 2);
+            
+            Console.WriteLine(gammaRateConvertedInt * epsilonRateConvertedInt);
+        }
+        private static void Day3Part2()
+        {
+            var day3Input = System.IO.File.ReadAllLines("Day3Input.txt");
+
+            var linesLow = new List<int[]>();
+
+            var gammaRate = new StringBuilder();
+            var epsilonRate = new StringBuilder();
+            var countOf1Bits = new int[0];
+
+            foreach (var input in day3Input)
+            {
+                if (int.Parse(input[0].ToString()) == 0)
+                {
+                    linesLow.Add(input.ToCharArray().Select(i => int.Parse(i.ToString())).ToArray());
+                }
+                countOf1Bits = new int[input.Length];
 
             }
-            Console.WriteLine(gammaRate);
 
+
+            foreach (var line in linesLow)
+            {
+                var pos = 0;
+                foreach (var bit in line)
+                {
+                    countOf1Bits[pos] += bit;
+                    
+                    pos++;
+
+                }
+               
+
+            }
+
+            foreach (var item in countOf1Bits)
+            {
+                if (item > (linesLow.Count / 2))
+                {
+                    gammaRate.Append('1');
+                    epsilonRate.Append('0');
+                }
+                else
+                {
+                    gammaRate.Append('0');
+                    epsilonRate.Append('1');
+                }
+            }
+
+            var gammaRateConvertedInt = Convert.ToInt32(gammaRate.ToString(), 2);
+            var epsilonRateConvertedInt = Convert.ToInt32(epsilonRate.ToString(), 2);
+            
+            Console.WriteLine(gammaRateConvertedInt * epsilonRateConvertedInt);
         }
 
         private static void Day2Part1()
