@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace AdventOfCode2021
 {
@@ -25,10 +26,49 @@ namespace AdventOfCode2021
 
         private static void Day3()
         {
-            Day3Part2();
+            Day3Part1and2();
         }
 
-        private static void Day3Part1()
+        private static int GetCommonBit(IEnumerable<int> bits, bool mostCommonBit)
+        {
+            var countOfBits = bits.Count();
+            var countOfZeros = bits.Count(b => b == 0);
+            var countOfOnes = bits.Count(b => b == 1);
+
+            if (countOfOnes > countOfZeros)
+            {
+                if (mostCommonBit)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            else if (countOfZeros > countOfOnes)
+            {
+                if (mostCommonBit)
+                {
+                    return 0;
+                }
+                else return 1;
+            }
+            else
+            {
+                if (mostCommonBit)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return 0;
+                }
+
+            }
+
+        }
+        private static void Day3Part1and2()
         {
             var day3Input = System.IO.File.ReadAllLines("Day3Input.txt");
 
@@ -36,103 +76,56 @@ namespace AdventOfCode2021
 
             var gammaRate = new StringBuilder();
             var epsilonRate = new StringBuilder();
-            var countOf1Bits = new int[0];
 
             foreach (var input in day3Input)
             {
                 lines.Add(input.ToCharArray().Select(i => int.Parse(i.ToString())).ToArray());
-                countOf1Bits = new int[input.Length];
-
             }
+            var lengthOfBitsInLine = lines.First().Length;
 
-            foreach (var line in lines)
+            //Part 1
+            for (int position = 0; position < lengthOfBitsInLine; position++)
             {
-                var pos = 0;
-                foreach (var bit in line)
+                var collectionOfBits = new List<int>();
+                foreach (var line in lines)
                 {
-                    countOf1Bits[pos] += bit;
-                    
-                    pos++;
-
+                    collectionOfBits.Add(line[position]);
                 }
-               
-
+                var mostCommonBit = GetCommonBit(collectionOfBits, true);
+                var leastCommonBit = mostCommonBit == 1 ? 0 : 1;
+                gammaRate.Append(mostCommonBit);
+                epsilonRate.Append(leastCommonBit);
             }
 
-            foreach (var item in countOf1Bits)
-            {
-                if (item > (lines.Count / 2))
-                {
-                    gammaRate.Append('1');
-                    epsilonRate.Append('0');
-                }
-                else
-                {
-                    gammaRate.Append('0');
-                    epsilonRate.Append('1');
-                }
-            }
-
-            var gammaRateConvertedInt = Convert.ToInt32(gammaRate.ToString(), 2);
-            var epsilonRateConvertedInt = Convert.ToInt32(epsilonRate.ToString(), 2);
+            Console.WriteLine(Convert.ToInt32(gammaRate.ToString(), 2) * Convert.ToInt32(epsilonRate.ToString(), 2));
             
-            Console.WriteLine(gammaRateConvertedInt * epsilonRateConvertedInt);
+            //Part2
+            var keepOxygenList = lines;
+            var keepCo2List = lines;
+
+            for (int position = 0; position < lengthOfBitsInLine; position++)
+            {
+
+                var mostCommonBit = GetCommonBit(keepOxygenList.Select(l => l[position]).ToList(), true);
+                var leastCommonBit = GetCommonBit(keepCo2List.Select(l => l[position]).ToList(), false);
+                if (keepOxygenList.Count > 1)
+                {
+                    keepOxygenList = keepOxygenList?
+                    .Where((b) => b[position] == mostCommonBit)
+                    .ToList();
+                }
+                if (keepCo2List.Count > 1)
+                {
+                    keepCo2List = keepCo2List?
+                        .Where((b) => b[position] == leastCommonBit)
+                        .ToList();
+                }
+            }
+            var oxygenBinaryString = string.Join("", keepOxygenList.First());
+            var co2BinaryString = string.Join("", keepCo2List.First());
+            var lifeSupportRating = Convert.ToInt32(oxygenBinaryString, 2) * Convert.ToInt32(co2BinaryString, 2);
+            Console.WriteLine(lifeSupportRating);
         }
-        private static void Day3Part2()
-        {
-            var day3Input = System.IO.File.ReadAllLines("Day3Input.txt");
-
-            var linesLow = new List<int[]>();
-
-            var gammaRate = new StringBuilder();
-            var epsilonRate = new StringBuilder();
-            var countOf1Bits = new int[0];
-
-            foreach (var input in day3Input)
-            {
-                if (int.Parse(input[0].ToString()) == 0)
-                {
-                    linesLow.Add(input.ToCharArray().Select(i => int.Parse(i.ToString())).ToArray());
-                }
-                countOf1Bits = new int[input.Length];
-
-            }
-
-
-            foreach (var line in linesLow)
-            {
-                var pos = 0;
-                foreach (var bit in line)
-                {
-                    countOf1Bits[pos] += bit;
-                    
-                    pos++;
-
-                }
-               
-
-            }
-
-            foreach (var item in countOf1Bits)
-            {
-                if (item > (linesLow.Count / 2))
-                {
-                    gammaRate.Append('1');
-                    epsilonRate.Append('0');
-                }
-                else
-                {
-                    gammaRate.Append('0');
-                    epsilonRate.Append('1');
-                }
-            }
-
-            var gammaRateConvertedInt = Convert.ToInt32(gammaRate.ToString(), 2);
-            var epsilonRateConvertedInt = Convert.ToInt32(epsilonRate.ToString(), 2);
-            
-            Console.WriteLine(gammaRateConvertedInt * epsilonRateConvertedInt);
-        }
-
         private static void Day2Part1()
         {
             var day2Input = System.IO.File.ReadAllLines("Day2Input.txt");
