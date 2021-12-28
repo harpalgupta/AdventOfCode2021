@@ -12,7 +12,9 @@ namespace AdventOfCode2021
         {
             //Day1();
             //Day2();
-            Day3();
+            //Day3();
+            Day4();
+
             Console.ReadKey();
         }
         private static void Day2()
@@ -152,6 +154,43 @@ namespace AdventOfCode2021
             }
             Console.WriteLine(horizontalTotal * depthTotal);
             Console.ReadKey();
+        }
+
+        private static void Day4()
+        {
+            var bingoGrids = PopulateBingoGridsFromInput();
+
+            foreach (var grid in bingoGrids)
+            {
+
+            }
+
+
+        }
+
+        private static List<List<string[]>> PopulateBingoGridsFromInput()
+        {
+            var day4Input = System.IO.File.ReadAllText("Day4Input.txt");
+            var numbersRead = day4Input.Split("\r\n\r\n").First().Split(",");
+            string pattern = @"(\r\n[\d|\s\d].+){5}";
+            Regex rx = new Regex(pattern);
+
+            var matchedGrids = rx.Matches(day4Input);
+            var bingoGrids = new List<List<string[]>>();
+            //populate/ format bingo grids
+            foreach (var grid in matchedGrids)
+            {
+                var pattern1 = @"(?:\s)";
+                var regex = new Regex(pattern1);
+                var gridOfLines = new List<string[]>();
+                var matchedGrid = (Match)grid;
+
+                var gridAstext = matchedGrid.Value.Split("\\r\\n", StringSplitOptions.RemoveEmptyEntries).First();
+                var gridOfLinesFormatted = gridAstext.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).Select(n => n.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries));
+                bingoGrids.Add(gridOfLinesFormatted.ToList());
+            }
+
+            return bingoGrids;
         }
 
         private static void Day2Part2()
