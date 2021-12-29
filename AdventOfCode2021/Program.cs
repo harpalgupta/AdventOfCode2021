@@ -100,7 +100,7 @@ namespace AdventOfCode2021
             }
 
             Console.WriteLine(Convert.ToInt32(gammaRate.ToString(), 2) * Convert.ToInt32(epsilonRate.ToString(), 2));
-            
+
             //Part2
             var keepOxygenList = lines;
             var keepCo2List = lines;
@@ -158,24 +158,56 @@ namespace AdventOfCode2021
 
         private static void Day4()
         {
-            var bingoGrids = PopulateBingoGridsFromInput();
-
-            foreach (var grid in bingoGrids)
+            var day4Input = System.IO.File.ReadAllText("Day4Input.txt");
+            var numbersRead = day4Input.Split("\r\n\r\n").First().Split(",");
+            var winningLines = new Dictionary<int, string[]>();
+            var bingoGrids = PopulateBingoGridsFromInput(day4Input);
+            var firstWinningLine = new string[0];
+            var firstWinningLineNumberCalledCount = 999999;
+            foreach (var number in numbersRead)
             {
 
             }
 
+            foreach (var grid in bingoGrids)
+            {
+                var matchesForLine = 0;
+                var calledCount = 0;
+                foreach (var line in grid)
+                {
+
+                    foreach (var number in numbersRead)
+                    {
+                        calledCount++;
+                        if (line.Any(n => n.Equals(number)))
+                        {
+                            matchesForLine++;
+                        }
+                        if (matchesForLine > 4 && calledCount < firstWinningLineNumberCalledCount)
+                        {
+
+                            firstWinningLineNumberCalledCount = calledCount;
+                            firstWinningLine = line;
+                        }
+                    }
+
+
+                }
+
+            }
+            Console.WriteLine(string.Join(" ", firstWinningLine) + " " + firstWinningLineNumberCalledCount);
+
+
 
         }
 
-        private static List<List<string[]>> PopulateBingoGridsFromInput()
+        private static List<List<string[]>> PopulateBingoGridsFromInput(string input)
         {
-            var day4Input = System.IO.File.ReadAllText("Day4Input.txt");
-            var numbersRead = day4Input.Split("\r\n\r\n").First().Split(",");
+
             string pattern = @"(\r\n[\d|\s\d].+){5}";
             Regex rx = new Regex(pattern);
 
-            var matchedGrids = rx.Matches(day4Input);
+            var matchedGrids = rx.Matches(input);
             var bingoGrids = new List<List<string[]>>();
             //populate/ format bingo grids
             foreach (var grid in matchedGrids)
