@@ -8,20 +8,25 @@ namespace AdventOfCode2021.Models
     public class BingoGrid
     {
 
-        private int gridDimension = 5;
-        public int CountOfNumbersRead { get; set; } = 0;
+        private readonly int gridDimension = 5;
+        public List<int> CalledNumbers = new List<int>();
 
         public int SumOfLosersAtPointOfWinning;
 
-        public List<List<GridEntry>> rows { get; private set; }
-        public List<List<GridEntry>> columns { get; private set; }
+        public List<List<GridEntry>> Rows { get; private set; }
+        public List<List<GridEntry>> Columns { get; private set; }
         public List<GridEntry> GridEntries { get; set; }
         public List<GridEntry> FirstWinningSequence { get; private set; }
 
+        public BingoGrid()
+        {
+            GridEntries = new List<GridEntry>();
+            FirstWinningSequence = new List<GridEntry>();
+        }
         public void PopulateRowsAndColumns()
         {
-            rows = GetRowsorColumns(Direction.Row);
-            columns = GetRowsorColumns(Direction.Column);
+            Rows = GetRowsorColumns(Direction.Row);
+            Columns = GetRowsorColumns(Direction.Column);
 
         }
         public void CheckNumberAndMarkWinners(int calledNumber)
@@ -32,7 +37,7 @@ namespace AdventOfCode2021.Models
             }
 
 
-            foreach (var row in rows)
+            foreach (var row in Rows)
             {
                 foreach (var ge in row)
                 {
@@ -41,19 +46,19 @@ namespace AdventOfCode2021.Models
                         ge.Winner = true;
                     }
                 }
-                if (row.Count(ge => ge.Winner) == 5 &! FirstWinningSequence.Any())
+                if (row.Count(ge => ge.Winner) == 5 & !FirstWinningSequence.Any())
                 {
-                    FirstWinningSequence= row;
+                    FirstWinningSequence = row;
                     SumOfLosersAtPointOfWinning = GridEntries.Where(ge => !ge.Winner).Sum(ge => ge.Value);
 
                 }
                 else
                 {
-                    this.CountOfNumbersRead++;
+                    this.CalledNumbers.Add(calledNumber);
                 }
             }
 
-            foreach (var column in columns)
+            foreach (var column in Columns)
             {
                 foreach (var ge in column)
                 {
@@ -62,12 +67,12 @@ namespace AdventOfCode2021.Models
                         ge.Winner = true;
                     }
                 }
-                if (column.Count(ge => ge.Winner) == 5 &! FirstWinningSequence.Any())
+                if (column.Count(ge => ge.Winner) == 5 & !FirstWinningSequence.Any())
                 {
-                        FirstWinningSequence = column;
+                    FirstWinningSequence = column;
                 }
             }
-  
+
         }
 
 
@@ -76,16 +81,16 @@ namespace AdventOfCode2021.Models
             var rows = GetRowsorColumns(Direction.Row);
             foreach (var row in rows)
             {
-                if(row.Count(ge=>ge.Winner) == 5)
+                if (row.Count(ge => ge.Winner) == 5)
                 {
-                    Console.WriteLine(row.Select(ge=>string.Join(' ',ge.Value)));
+                    Console.WriteLine(row.Select(ge => string.Join(' ', ge.Value)));
                 }
             }
         }
 
         public int GetSumOfAllLosers()
         {
-            return this.GridEntries.Where(ge => ge.Winner== false).Sum(ge => ge.Value);
+            return this.GridEntries.Where(ge => ge.Winner == false).Sum(ge => ge.Value);
         }
 
         public int GetSumOfGrid()
@@ -127,50 +132,6 @@ namespace AdventOfCode2021.Models
 
             return rows.ToList();
         }
-
-        private List<BingoGrid> PopulateBingoGridsFromInput(string input)
-        {
-
-            string pattern = @"(\r\n[\d|\s\d].+){5}";
-            Regex rx = new Regex(pattern);
-
-            var matchedGrids = rx.Matches(input);
-            var bingoGrids = new List<List<string[]>>();
-            //populate/ format bingo grids
-            foreach (var grid in matchedGrids)
-            {
-                //var pattern1 = @"(?:\s)";
-                //var regex = new Regex(pattern1);
-                //var gridOfLines = new List<string[]>();
-                var matchedGrid = (Match)grid;
-
-                var gridAstext = matchedGrid.Value.Split("\\r\\n", StringSplitOptions.RemoveEmptyEntries).First();
-                var gridOfLinesFormatted = gridAstext.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).Select(n => n.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries));
-                bingoGrids.Add(gridOfLinesFormatted.ToList());
-            }
-
-            var computedGrids = new List<BingoGrid>();
-            for (int gridCount = 0; gridCount < bingoGrids.Count; gridCount++)
-            {
-                var computedGrid = new BingoGrid
-                {
-                    GridEntries = new List<GridEntry>()
-                };
-                var bingoGrid = bingoGrids[gridCount].Select(l => l.Select(e => int.Parse(e))).ToArray();
-                for (int lineCount = 0; lineCount < bingoGrid.Count(); lineCount++)
-                {
-                    var line = bingoGrid[lineCount].ToArray();
-                    for (int entryCount = 0; entryCount < bingoGrid.Count(); entryCount++)
-                    {
-                        computedGrid.GridEntries.Add(new GridEntry { Position = new GridPosition { X = entryCount, Y = lineCount }, Value = line[entryCount] });
-                    }
-                }
-                computedGrids.Add(computedGrid);
-            }
-
-            return computedGrids;
-        }
-
     }
 
 

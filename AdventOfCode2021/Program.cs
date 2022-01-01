@@ -9,7 +9,7 @@ namespace AdventOfCode2021
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             //Day1();
             //Day2();
@@ -160,9 +160,9 @@ namespace AdventOfCode2021
         private static void Day4()
         {
             var day4Input = System.IO.File.ReadAllText("Day4Input.txt");
-            var numbersRead = day4Input.Split("\r\n\r\n").First().Split(",").Select(s=>int.Parse(s));
+            var numbersRead = day4Input.Split("\r\n\r\n").First().Split(",").Select(s => int.Parse(s));
             var bingoGrids = PopulateBingoGridsFromInput(day4Input);
-            
+
             foreach (var numberRead in numbersRead)
             {
                 for (int gridNumber = 0; gridNumber < bingoGrids.Count; gridNumber++)
@@ -173,22 +173,32 @@ namespace AdventOfCode2021
 
                 }
             }
-            var winningGrids = bingoGrids.Where(bg => bg.FirstWinningSequence.Any()).OrderBy(wg => wg.CountOfNumbersRead);
-            
-            var winningGridAsText = "";
+            var firstWinningGrid = bingoGrids.Where(bg => bg.FirstWinningSequence.Any()).OrderBy(wg => wg.CalledNumbers.Count).First();
+            var lastWinningGrid = bingoGrids.Where(bg => bg.FirstWinningSequence.Any()).OrderBy(wg => wg.CalledNumbers.Count).Last();
 
-            foreach (var row in winningGrids.First().rows)
+            //part1
+            DisplayFinalScore(firstWinningGrid);
+            
+            //part2
+            DisplayFinalScore(lastWinningGrid);
+
+        }
+
+        private static void DisplayFinalScore(BingoGrid winningGrid)
+        {
+            var winningGridAsText = "";
+            foreach (var row in winningGrid.Rows)
             {
-                winningGridAsText+=( string.Join(' ', row.Select(r => r.Value)) + "\r\n");
+                winningGridAsText += (string.Join(' ', row.Select(r => r.Value)) + "\r\n");
 
             }
-
             Console.WriteLine($"firstWinningGrid:\r\n{winningGridAsText}");
-            Console.WriteLine($"firstWinningSequence: {string.Join(' ',winningGrids.First().FirstWinningSequence.Select(ge=>ge.Value))}");
-            Console.WriteLine($"sum of losers on grid: {winningGrids.First().SumOfLosersAtPointOfWinning}");
-
-
-
+            Console.WriteLine($"firstWinningSequence: {string.Join(' ', winningGrid.FirstWinningSequence.Select(ge => ge.Value))}");
+            var sumOfLosers = winningGrid.SumOfLosersAtPointOfWinning;
+            var lastCalledNumberWhenWon = winningGrid.CalledNumbers.Last();
+            Console.WriteLine($"sum of losers on grid: {sumOfLosers}");
+            Console.WriteLine($"last winning number: {lastCalledNumberWhenWon}");
+            Console.WriteLine($"Final Score: {sumOfLosers * lastCalledNumberWhenWon}");
         }
 
         private static List<BingoGrid> PopulateBingoGridsFromInput(string input)
@@ -202,9 +212,6 @@ namespace AdventOfCode2021
             //populate/ format bingo grids
             foreach (var grid in matchedGrids)
             {
-                //var pattern1 = @"(?:\s)";
-                //var regex = new Regex(pattern1);
-                //var gridOfLines = new List<string[]>();
                 var matchedGrid = (Match)grid;
 
                 var gridAstext = matchedGrid.Value.Split("\\r\\n", StringSplitOptions.RemoveEmptyEntries).First();
@@ -219,13 +226,13 @@ namespace AdventOfCode2021
                 {
                     GridEntries = new List<GridEntry>()
                 };
-                var bingoGrid = bingoGrids[gridCount].Select(l=>l.Select(e=>int.Parse(e))).ToArray();
+                var bingoGrid = bingoGrids[gridCount].Select(l => l.Select(e => int.Parse(e))).ToArray();
                 for (int lineCount = 0; lineCount < bingoGrid.Count(); lineCount++)
                 {
                     var line = bingoGrid[lineCount].ToArray();
                     for (int entryCount = 0; entryCount < bingoGrid.Count(); entryCount++)
                     {
-                        computedGrid.GridEntries.Add(new GridEntry {Position = new GridPosition {X = entryCount, Y = lineCount},Value = line[entryCount]});
+                        computedGrid.GridEntries.Add(new GridEntry { Position = new GridPosition { X = entryCount, Y = lineCount }, Value = line[entryCount] });
                     }
                 }
                 computedGrid.PopulateRowsAndColumns();
@@ -337,13 +344,4 @@ namespace AdventOfCode2021
         }
     }
 
-    internal class MatchingEntry
-    {
-        public int grid { get; set; }
-        public int lineNumber { get; set; }
-        public int column { get; set; }
-        public int indexOfNumberCalled  { get; set; }
-        
-        public int valueOfMatchedNumber { get; set; }
-    }
 }
