@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using AdventOfCode2021.Models;
 
 namespace AdventOfCode2021
 {
@@ -159,49 +160,22 @@ namespace AdventOfCode2021
         private static void Day4()
         {
             var day4Input = System.IO.File.ReadAllText("Day4Input.txt");
-            var numbersRead = day4Input.Split("\r\n\r\n").First().Split(",");
-            var winningLines = new Dictionary<int, string[]>();
+            var numbersRead = day4Input.Split("\r\n\r\n").First().Split(",").Select(s=>int.Parse(s));
             var bingoGrids = PopulateBingoGridsFromInput(day4Input);
-            var firstWinningLine = new string[0];
-            var firstWinningLineNumberCalledCount = 999999;
-            foreach (var number in numbersRead)
+            foreach (var numberRead in numbersRead)
             {
-
-            }
-
-            foreach (var grid in bingoGrids)
-            {
-                var matchesForLine = 0;
-                var calledCount = 0;
-                foreach (var line in grid)
+                foreach (var bingoGrid in bingoGrids)
                 {
-
-                    foreach (var number in numbersRead)
-                    {
-                        calledCount++;
-                        if (line.Any(n => n.Equals(number)))
-                        {
-                            matchesForLine++;
-                        }
-                        if (matchesForLine > 4 && calledCount < firstWinningLineNumberCalledCount)
-                        {
-
-                            firstWinningLineNumberCalledCount = calledCount;
-                            firstWinningLine = line;
-                        }
-                    }
-
-
+                    bingoGrid.CheckNumberAndMarkWinners(numberRead);
+                    
                 }
-
             }
-            Console.WriteLine(string.Join(" ", firstWinningLine) + " " + firstWinningLineNumberCalledCount);
-
-
+            
+            
 
         }
 
-        private static List<List<string[]>> PopulateBingoGridsFromInput(string input)
+        private static List<BingoGrid> PopulateBingoGridsFromInput(string input)
         {
 
             string pattern = @"(\r\n[\d|\s\d].+){5}";
@@ -212,9 +186,9 @@ namespace AdventOfCode2021
             //populate/ format bingo grids
             foreach (var grid in matchedGrids)
             {
-                var pattern1 = @"(?:\s)";
-                var regex = new Regex(pattern1);
-                var gridOfLines = new List<string[]>();
+                //var pattern1 = @"(?:\s)";
+                //var regex = new Regex(pattern1);
+                //var gridOfLines = new List<string[]>();
                 var matchedGrid = (Match)grid;
 
                 var gridAstext = matchedGrid.Value.Split("\\r\\n", StringSplitOptions.RemoveEmptyEntries).First();
@@ -222,7 +196,26 @@ namespace AdventOfCode2021
                 bingoGrids.Add(gridOfLinesFormatted.ToList());
             }
 
-            return bingoGrids;
+            var computedGrids = new List<BingoGrid>();
+            for (int gridCount = 0; gridCount < bingoGrids.Count; gridCount++)
+            {
+                var computedGrid = new BingoGrid
+                {
+                    GridEntries = new List<GridEntry>()
+                };
+                var bingoGrid = bingoGrids[gridCount].Select(l=>l.Select(e=>int.Parse(e))).ToArray();
+                for (int lineCount = 0; lineCount < bingoGrid.Count(); lineCount++)
+                {
+                    var line = bingoGrid[lineCount].ToArray();
+                    for (int entryCount = 0; entryCount < bingoGrid.Count(); entryCount++)
+                    {
+                        computedGrid.GridEntries.Add(new GridEntry {Position = new GridPosition {X = entryCount, Y = lineCount},Value = line[entryCount]});
+                    }
+                }
+                computedGrids.Add(computedGrid);
+            }
+
+            return computedGrids;
         }
 
         private static void Day2Part2()
@@ -325,5 +318,15 @@ namespace AdventOfCode2021
             }
             Console.WriteLine($"number of decreases: {countOfDecreases} number of increases: {countOfIncreases}");
         }
+    }
+
+    internal class MatchingEntry
+    {
+        public int grid { get; set; }
+        public int lineNumber { get; set; }
+        public int column { get; set; }
+        public int indexOfNumberCalled  { get; set; }
+        
+        public int valueOfMatchedNumber { get; set; }
     }
 }
