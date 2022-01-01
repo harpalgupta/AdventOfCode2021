@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using AdventOfCode2021.Models;
 
 namespace AdventOfCode2021
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             //Day1();
             //Day2();
@@ -159,49 +160,48 @@ namespace AdventOfCode2021
         private static void Day4()
         {
             var day4Input = System.IO.File.ReadAllText("Day4Input.txt");
-            var numbersRead = day4Input.Split("\r\n\r\n").First().Split(",");
-            var winningLines = new Dictionary<int, string[]>();
+            var numbersRead = day4Input.Split("\r\n\r\n").First().Split(",").Select(s => int.Parse(s));
             var bingoGrids = PopulateBingoGridsFromInput(day4Input);
-            var firstWinningLine = new string[0];
-            var firstWinningLineNumberCalledCount = 999999;
-            foreach (var number in numbersRead)
-            {
 
-            }
-
-            foreach (var grid in bingoGrids)
+            foreach (var numberRead in numbersRead)
             {
-                var matchesForLine = 0;
-                var calledCount = 0;
-                foreach (var line in grid)
+                for (int gridNumber = 0; gridNumber < bingoGrids.Count; gridNumber++)
                 {
+                    BingoGrid bingoGrid = bingoGrids[gridNumber];
 
-                    foreach (var number in numbersRead)
-                    {
-                        calledCount++;
-                        if (line.Any(n => n.Equals(number)))
-                        {
-                            matchesForLine++;
-                        }
-                        if (matchesForLine > 4 && calledCount < firstWinningLineNumberCalledCount)
-                        {
-
-                            firstWinningLineNumberCalledCount = calledCount;
-                            firstWinningLine = line;
-                        }
-                    }
-
+                    bingoGrid.CheckNumberAndMarkWinners(numberRead);
 
                 }
-
             }
-            Console.WriteLine(string.Join(" ", firstWinningLine) + " " + firstWinningLineNumberCalledCount);
+            var firstWinningGrid = bingoGrids.Where(bg => bg.FirstWinningSequence.Any()).OrderBy(wg => wg.CalledNumbers.Count).First();
+            var lastWinningGrid = bingoGrids.Where(bg => bg.FirstWinningSequence.Any()).OrderBy(wg => wg.CalledNumbers.Count).Last();
 
-
+            //part1
+            DisplayFinalScore(firstWinningGrid);
+            
+            //part2
+            DisplayFinalScore(lastWinningGrid);
 
         }
 
-        private static List<List<string[]>> PopulateBingoGridsFromInput(string input)
+        private static void DisplayFinalScore(BingoGrid winningGrid)
+        {
+            var winningGridAsText = "";
+            foreach (var row in winningGrid.Rows)
+            {
+                winningGridAsText += (string.Join(' ', row.Select(r => r.Value)) + "\r\n");
+
+            }
+            Console.WriteLine($"firstWinningGrid:\r\n{winningGridAsText}");
+            Console.WriteLine($"firstWinningSequence: {string.Join(' ', winningGrid.FirstWinningSequence.Select(ge => ge.Value))}");
+            var sumOfLosers = winningGrid.SumOfLosersAtPointOfWinning;
+            var lastCalledNumberWhenWon = winningGrid.CalledNumbers.Last();
+            Console.WriteLine($"sum of losers on grid: {sumOfLosers}");
+            Console.WriteLine($"last winning number: {lastCalledNumberWhenWon}");
+            Console.WriteLine($"Final Score: {sumOfLosers * lastCalledNumberWhenWon}");
+        }
+
+        private static List<BingoGrid> PopulateBingoGridsFromInput(string input)
         {
 
             string pattern = @"(\r\n[\d|\s\d].+){5}";
@@ -212,9 +212,6 @@ namespace AdventOfCode2021
             //populate/ format bingo grids
             foreach (var grid in matchedGrids)
             {
-                var pattern1 = @"(?:\s)";
-                var regex = new Regex(pattern1);
-                var gridOfLines = new List<string[]>();
                 var matchedGrid = (Match)grid;
 
                 var gridAstext = matchedGrid.Value.Split("\\r\\n", StringSplitOptions.RemoveEmptyEntries).First();
@@ -222,7 +219,27 @@ namespace AdventOfCode2021
                 bingoGrids.Add(gridOfLinesFormatted.ToList());
             }
 
-            return bingoGrids;
+            var computedGrids = new List<BingoGrid>();
+            for (int gridCount = 0; gridCount < bingoGrids.Count; gridCount++)
+            {
+                var computedGrid = new BingoGrid
+                {
+                    GridEntries = new List<GridEntry>()
+                };
+                var bingoGrid = bingoGrids[gridCount].Select(l => l.Select(e => int.Parse(e))).ToArray();
+                for (int lineCount = 0; lineCount < bingoGrid.Count(); lineCount++)
+                {
+                    var line = bingoGrid[lineCount].ToArray();
+                    for (int entryCount = 0; entryCount < bingoGrid.Count(); entryCount++)
+                    {
+                        computedGrid.GridEntries.Add(new GridEntry { Position = new GridPosition { X = entryCount, Y = lineCount }, Value = line[entryCount] });
+                    }
+                }
+                computedGrid.PopulateRowsAndColumns();
+                computedGrids.Add(computedGrid);
+            }
+
+            return computedGrids;
         }
 
         private static void Day2Part2()
@@ -326,4 +343,5 @@ namespace AdventOfCode2021
             Console.WriteLine($"number of decreases: {countOfDecreases} number of increases: {countOfIncreases}");
         }
     }
+
 }
