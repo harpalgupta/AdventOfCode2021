@@ -162,16 +162,32 @@ namespace AdventOfCode2021
             var day4Input = System.IO.File.ReadAllText("Day4Input.txt");
             var numbersRead = day4Input.Split("\r\n\r\n").First().Split(",").Select(s=>int.Parse(s));
             var bingoGrids = PopulateBingoGridsFromInput(day4Input);
+            
             foreach (var numberRead in numbersRead)
             {
-                foreach (var bingoGrid in bingoGrids)
+                for (int gridNumber = 0; gridNumber < bingoGrids.Count; gridNumber++)
                 {
+                    BingoGrid bingoGrid = bingoGrids[gridNumber];
+
                     bingoGrid.CheckNumberAndMarkWinners(numberRead);
-                    
+
                 }
             }
+            var winningGrids = bingoGrids.Where(bg => bg.FirstWinningSequence.Any()).OrderBy(wg => wg.CountOfNumbersRead);
             
-            
+            var winningGridAsText = "";
+
+            foreach (var row in winningGrids.First().rows)
+            {
+                winningGridAsText+=( string.Join(' ', row.Select(r => r.Value)) + "\r\n");
+
+            }
+
+            Console.WriteLine($"firstWinningGrid:\r\n{winningGridAsText}");
+            Console.WriteLine($"firstWinningSequence: {string.Join(' ',winningGrids.First().FirstWinningSequence.Select(ge=>ge.Value))}");
+            Console.WriteLine($"sum of losers on grid: {winningGrids.First().SumOfLosersAtPointOfWinning}");
+
+
 
         }
 
@@ -212,6 +228,7 @@ namespace AdventOfCode2021
                         computedGrid.GridEntries.Add(new GridEntry {Position = new GridPosition {X = entryCount, Y = lineCount},Value = line[entryCount]});
                     }
                 }
+                computedGrid.PopulateRowsAndColumns();
                 computedGrids.Add(computedGrid);
             }
 
