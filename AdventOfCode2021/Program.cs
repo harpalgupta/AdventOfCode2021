@@ -14,10 +14,83 @@ namespace AdventOfCode2021
             //Day1();
             //Day2();
             //Day3();
-            Day4();
+            //Day4();
+            Day5();
 
             Console.ReadKey();
         }
+
+        private static void Day5()
+        {
+            var day5Input = System.IO.File.ReadAllLines("Day5Input.txt");
+            var grid = new List<GridPosition>();
+            var dictionaryOfTotals = new Dictionary<string, int>();
+            foreach (var line in day5Input)
+            {
+                var positions = line.Split(new[] { " -> " }, StringSplitOptions.None);
+                var start = positions[0].Split(',');
+                var end = positions[1].Split(',');
+                var startPos= new GridPosition { X = int.Parse(start[0]), Y = int.Parse(start[1]) };
+                var endPos = new GridPosition { X = int.Parse(end[0]), Y = int.Parse(end[1]) };
+                var columnRange = false;
+                var rowRange = false;
+
+                if (startPos.X == endPos.X && startPos.Y != endPos.Y)
+                {
+                    columnRange = true;
+                }
+
+                if (startPos.Y == endPos.Y && startPos.X != endPos.X)
+                {
+                    rowRange = true;
+                }
+
+                if (rowRange)
+                {
+                    var beginning = startPos;
+                    var ending = endPos;
+                    if (startPos.X> endPos.X)
+                    {
+                         beginning = endPos;
+                         ending = startPos;
+                    }
+                   
+                    for (int i = beginning.X; i < ending.X+1; i++)
+                    {
+                        grid.Add(new GridPosition { Y = beginning.Y, X = i });
+                        var count = grid.Count(gp => gp.Y == beginning.Y && gp.X == i);
+                        Console.WriteLine(count);
+                    }
+
+                }
+
+                if (columnRange)
+                {
+                    var beginning = startPos;
+                    var ending = endPos;
+                    if (startPos.Y > endPos.Y)
+                    {
+                        beginning = endPos;
+                        ending = startPos;
+                    }
+
+                    for (int i = beginning.Y; i < ending.Y+1; i++)
+                    {
+                        grid.Add(new GridPosition { Y = i, X = beginning.X });
+                        var count = grid.Count(gp => gp.X == beginning.X && gp.Y == i);
+                        Console.WriteLine(count);
+                    }
+
+
+                }
+
+            }
+            Console.WriteLine(grid.Count());
+
+
+
+        }
+
         private static void Day2()
         {
             //Day2Part1();
