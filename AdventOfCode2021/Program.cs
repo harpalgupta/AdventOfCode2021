@@ -23,45 +23,53 @@ namespace AdventOfCode2021
         private static void Day5()
         {
             var day5Input = System.IO.File.ReadAllLines("Day5Input.txt");
-            var grid = new List<GridPosition>();
+            var grid = new Dictionary<string, int>();
             var dictionaryOfTotals = new Dictionary<string, int>();
             foreach (var line in day5Input)
             {
-                var positions = line.Split(new[] { " -> " }, StringSplitOptions.None);
+                var positions = line.Split(new[] {" -> "}, StringSplitOptions.None);
                 var start = positions[0].Split(',');
                 var end = positions[1].Split(',');
-                var startPos= new GridPosition { X = int.Parse(start[0]), Y = int.Parse(start[1]) };
-                var endPos = new GridPosition { X = int.Parse(end[0]), Y = int.Parse(end[1]) };
+                var startPos = new GridPosition {X = int.Parse(start[0]), Y = int.Parse(start[1])};
+                var endPos = new GridPosition {X = int.Parse(end[0]), Y = int.Parse(end[1])};
                 var columnRange = false;
                 var rowRange = false;
+                var diagonalRange = false;
 
                 if (startPos.X == endPos.X && startPos.Y != endPos.Y)
                 {
                     columnRange = true;
                 }
-
-                if (startPos.Y == endPos.Y && startPos.X != endPos.X)
+                else if (startPos.Y == endPos.Y && startPos.X != endPos.X)
                 {
                     rowRange = true;
+                }
+                else if (startPos.Y != endPos.Y && startPos.X != endPos.X)
+                {
+                    diagonalRange = true;
                 }
 
                 if (rowRange)
                 {
                     var beginning = startPos;
                     var ending = endPos;
-                    if (startPos.X> endPos.X)
+                    if (startPos.X > endPos.X)
                     {
-                         beginning = endPos;
-                         ending = startPos;
-                    }
-                   
-                    for (int i = beginning.X; i < ending.X+1; i++)
-                    {
-                        grid.Add(new GridPosition { Y = beginning.Y, X = i });
-                        var count = grid.Count(gp => gp.Y == beginning.Y && gp.X == i);
-                        Console.WriteLine(count);
+                        beginning = endPos;
+                        ending = startPos;
                     }
 
+                    for (int i = beginning.X; i < ending.X + 1; i++)
+                    {
+                        if (grid.ContainsKey($"{i},{beginning.Y}"))
+                        {
+                            grid[$"{i},{beginning.Y}"]++;
+                        }
+                        else
+                        {
+                            grid.Add($"{i},{beginning.Y}", 1);
+                        }
+                    }
                 }
 
                 if (columnRange)
@@ -74,30 +82,86 @@ namespace AdventOfCode2021
                         ending = startPos;
                     }
 
-                    for (int i = beginning.Y; i < ending.Y+1; i++)
+                    for (int i = beginning.Y; i < ending.Y + 1; i++)
                     {
-                        grid.Add(new GridPosition { Y = i, X = beginning.X });
-                        var count = grid.Count(gp => gp.X == beginning.X && gp.Y == i);
-                        Console.WriteLine(count);
+                        if (grid.ContainsKey($"{beginning.X},{i}"))
+                        {
+                            grid[$"{beginning.X},{i}"]++;
+                        }
+                        else
+                        {
+                            grid.Add($"{beginning.X},{i}", 1);
+                        }
                     }
-
-
                 }
 
+                if (diagonalRange)
+                {
+                    var beginning = startPos;
+                    var ending = endPos;
+
+                    var xDirection = 0;
+                    var yDirection = 0;
+
+                    if (ending.X > beginning.X)
+                    {
+                        xDirection = 1;
+                    }
+
+                    if (ending.X < beginning.X)
+                    {
+                        xDirection = -1;
+                    }
+
+                    if (ending.Y > beginning.Y)
+                    {
+                        yDirection = 1;
+                    }
+
+                    if (ending.Y < beginning.Y)
+                    {
+                        yDirection = -1;
+                    }
+
+                    var difference = Math.Abs(beginning.X - ending.X);
+
+                    var currenPos = startPos;
+
+                    if (grid.ContainsKey($"{currenPos.X},{currenPos.Y}"))
+                    {
+                        grid[$"{currenPos.X},{currenPos.Y}"]++;
+                    }
+                    else
+                    {
+                        grid.Add($"{currenPos.X},{currenPos.Y}", 1);
+                    }
+
+                    for (int i = 0; i < difference; i++)
+                    {
+                        currenPos.X += xDirection;
+                        currenPos.Y += yDirection;
+
+                        if (grid.ContainsKey($"{currenPos.X},{currenPos.Y}"))
+                        {
+                            grid[$"{currenPos.X},{currenPos.Y}"]++;
+                        }
+                        else
+                        {
+                            grid.Add($"{currenPos.X},{currenPos.Y}", 1);
+                        }
+                    }
+                }
             }
-            Console.WriteLine(grid.Count());
 
+            var countOfOverlappingPointsGreaterThenTwo = grid.Count(gp => gp.Value >= 2);
 
-
+            Console.WriteLine(countOfOverlappingPointsGreaterThenTwo);
         }
 
         private static void Day2()
         {
             //Day2Part1();
             //Day2Part2();
-
-
-
         }
 
         private static void Day3()
@@ -140,10 +204,9 @@ namespace AdventOfCode2021
                 {
                     return 0;
                 }
-
             }
-
         }
+
         private static void Day3Part1and2()
         {
             var day3Input = System.IO.File.ReadAllLines("Day3Input.txt");
@@ -157,6 +220,7 @@ namespace AdventOfCode2021
             {
                 lines.Add(input.ToCharArray().Select(i => int.Parse(i.ToString())).ToArray());
             }
+
             var lengthOfBitsInLine = lines.First().Length;
 
             //Part 1
@@ -167,6 +231,7 @@ namespace AdventOfCode2021
                 {
                     collectionOfBits.Add(line[position]);
                 }
+
                 var mostCommonBit = GetCommonBit(collectionOfBits, true);
                 var leastCommonBit = mostCommonBit == 1 ? 0 : 1;
                 gammaRate.Append(mostCommonBit);
@@ -181,15 +246,15 @@ namespace AdventOfCode2021
 
             for (int position = 0; position < lengthOfBitsInLine; position++)
             {
-
                 var mostCommonBit = GetCommonBit(keepOxygenList.Select(l => l[position]).ToList(), true);
                 var leastCommonBit = GetCommonBit(keepCo2List.Select(l => l[position]).ToList(), false);
                 if (keepOxygenList.Count > 1)
                 {
                     keepOxygenList = keepOxygenList?
-                    .Where((b) => b[position] == mostCommonBit)
-                    .ToList();
+                        .Where((b) => b[position] == mostCommonBit)
+                        .ToList();
                 }
+
                 if (keepCo2List.Count > 1)
                 {
                     keepCo2List = keepCo2List?
@@ -197,11 +262,13 @@ namespace AdventOfCode2021
                         .ToList();
                 }
             }
+
             var oxygenBinaryString = string.Join("", keepOxygenList.First());
             var co2BinaryString = string.Join("", keepCo2List.First());
             var lifeSupportRating = Convert.ToInt32(oxygenBinaryString, 2) * Convert.ToInt32(co2BinaryString, 2);
             Console.WriteLine(lifeSupportRating);
         }
+
         private static void Day2Part1()
         {
             var day2Input = System.IO.File.ReadAllLines("Day2Input.txt");
@@ -217,15 +284,13 @@ namespace AdventOfCode2021
                 else if (splitPos[0] == "down")
                 {
                     depthTotal += int.Parse(splitPos[1]);
-
                 }
                 else if (splitPos[0] == "up")
                 {
                     depthTotal -= int.Parse(splitPos[1]);
-
                 }
-
             }
+
             Console.WriteLine(horizontalTotal * depthTotal);
             Console.ReadKey();
         }
@@ -243,18 +308,19 @@ namespace AdventOfCode2021
                     BingoGrid bingoGrid = bingoGrids[gridNumber];
 
                     bingoGrid.CheckNumberAndMarkWinners(numberRead);
-
                 }
             }
-            var firstWinningGrid = bingoGrids.Where(bg => bg.FirstWinningSequence.Any()).OrderBy(wg => wg.CalledNumbers.Count).First();
-            var lastWinningGrid = bingoGrids.Where(bg => bg.FirstWinningSequence.Any()).OrderBy(wg => wg.CalledNumbers.Count).Last();
+
+            var firstWinningGrid = bingoGrids.Where(bg => bg.FirstWinningSequence.Any())
+                .OrderBy(wg => wg.CalledNumbers.Count).First();
+            var lastWinningGrid = bingoGrids.Where(bg => bg.FirstWinningSequence.Any())
+                .OrderBy(wg => wg.CalledNumbers.Count).Last();
 
             //part1
             DisplayFinalScore(firstWinningGrid);
-            
+
             //part2
             DisplayFinalScore(lastWinningGrid);
-
         }
 
         private static void DisplayFinalScore(BingoGrid winningGrid)
@@ -263,10 +329,11 @@ namespace AdventOfCode2021
             foreach (var row in winningGrid.Rows)
             {
                 winningGridAsText += (string.Join(' ', row.Select(r => r.Value)) + "\r\n");
-
             }
+
             Console.WriteLine($"firstWinningGrid:\r\n{winningGridAsText}");
-            Console.WriteLine($"firstWinningSequence: {string.Join(' ', winningGrid.FirstWinningSequence.Select(ge => ge.Value))}");
+            Console.WriteLine(
+                $"firstWinningSequence: {string.Join(' ', winningGrid.FirstWinningSequence.Select(ge => ge.Value))}");
             var sumOfLosers = winningGrid.SumOfLosersAtPointOfWinning;
             var lastCalledNumberWhenWon = winningGrid.CalledNumbers.Last();
             Console.WriteLine($"sum of losers on grid: {sumOfLosers}");
@@ -276,7 +343,6 @@ namespace AdventOfCode2021
 
         private static List<BingoGrid> PopulateBingoGridsFromInput(string input)
         {
-
             string pattern = @"(\r\n[\d|\s\d].+){5}";
             Regex rx = new Regex(pattern);
 
@@ -285,10 +351,11 @@ namespace AdventOfCode2021
             //populate/ format bingo grids
             foreach (var grid in matchedGrids)
             {
-                var matchedGrid = (Match)grid;
+                var matchedGrid = (Match) grid;
 
                 var gridAstext = matchedGrid.Value.Split("\\r\\n", StringSplitOptions.RemoveEmptyEntries).First();
-                var gridOfLinesFormatted = gridAstext.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).Select(n => n.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries));
+                var gridOfLinesFormatted = gridAstext.Split("\r\n", StringSplitOptions.RemoveEmptyEntries)
+                    .Select(n => n.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries));
                 bingoGrids.Add(gridOfLinesFormatted.ToList());
             }
 
@@ -305,9 +372,11 @@ namespace AdventOfCode2021
                     var line = bingoGrid[lineCount].ToArray();
                     for (int entryCount = 0; entryCount < bingoGrid.Count(); entryCount++)
                     {
-                        computedGrid.GridEntries.Add(new GridEntry { Position = new GridPosition { X = entryCount, Y = lineCount }, Value = line[entryCount] });
+                        computedGrid.GridEntries.Add(new GridEntry
+                            {Position = new GridPosition {X = entryCount, Y = lineCount}, Value = line[entryCount]});
                     }
                 }
+
                 computedGrid.PopulateRowsAndColumns();
                 computedGrids.Add(computedGrid);
             }
@@ -335,18 +404,15 @@ namespace AdventOfCode2021
                 else if (splitPos[0] == "down")
                 {
                     aim += int.Parse(splitPos[1]);
-
-
                 }
                 else if (splitPos[0] == "up")
                 {
                     aim -= int.Parse(splitPos[1]);
-
                 }
+
                 Console.WriteLine($"aim:{aim}");
-
-
             }
+
             Console.WriteLine($"{horizontalTotal} * {depthTotal}");
             Console.WriteLine(horizontalTotal * depthTotal);
             Console.ReadKey();
@@ -362,14 +428,13 @@ namespace AdventOfCode2021
 
         private static void Day1Part1(int[] sonarInputs)
         {
-
             CountIncreasesAndDecreasesInInput(sonarInputs);
 
             Console.ReadKey();
         }
+
         private static void Day1Part2(int[] sonarInputs)
         {
-
             var position = 0;
             var output = new List<int>();
             foreach (var input in sonarInputs)
@@ -384,8 +449,8 @@ namespace AdventOfCode2021
                 }
 
                 position++;
-
             }
+
             CountIncreasesAndDecreasesInInput(output.ToArray());
 
             Console.ReadKey();
@@ -410,11 +475,11 @@ namespace AdventOfCode2021
                         countOfIncreases++;
                     }
                 }
-                index++;
 
+                index++;
             }
+
             Console.WriteLine($"number of decreases: {countOfDecreases} number of increases: {countOfIncreases}");
         }
     }
-
 }
