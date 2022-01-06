@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using AdventOfCode2021.Models;
 
 namespace AdventOfCode2021
@@ -25,29 +27,54 @@ namespace AdventOfCode2021
         {
             var day6Input = System.IO.File.ReadAllText("Day6Input.txt");
 
-            var lanternFishes = day6Input.Split(',').Select(i=>int.Parse(i)).Select(i=>new LanternFish(i)).ToList();
-            
-            var days = 80;
+            var lanternFishes = day6Input.Split(',').Select(i => int.Parse(i)).Select(i => new LanternFish(i)).ToList();
 
-            for (int i = 1; i < days+1; i++)
+            var days = 256;
+
+            var lastOutput = string.Empty;
+            for (int i = 1; i < days + 1; i++)
             {
-                var lanternFishToAdd = new List<LanternFish>();
-                foreach (var lanternFish in lanternFishes)
+                Console.WriteLine(i);
+                var lanternFishToAdd = LanternFishToAdd(lanternFishes);
+
+                // Console.WriteLine($"day{i} {string.Join(',', lanternFishes.Select(i => i.DaysUntilSpawn))}");
+                if (i == days)
                 {
-                    lanternFish.DayIncrement();
-                    if (lanternFish.DaysUntilSpawn == 0)
-                    {
-                        lanternFishToAdd.Add(new LanternFish(9));
-                    }
+                    lastOutput= $"total fishes {lanternFishes.Count}";
+
                 }
-
-                Console.WriteLine($"day{i} {string.Join(',',lanternFishes.Select(i=>i.DaysUntilSpawn))}");
-                Console.WriteLine($"total fishes {lanternFishes.Count}");
                 lanternFishes.AddRange(lanternFishToAdd);
-
             }
+
+            Console.WriteLine(lastOutput);
+        }
+
+        private static List<LanternFish> LanternFishToAdd(List<LanternFish> lanternFishes)
+        {
+            var numberOfLanternFishToAdd = 0;
+            var localListOfLanternFish = new ConcurrentBag<LanternFish>();
+
+            Parallel.ForEach(lanternFishes, lanternFish =>
+            {
+                lanternFish.DayIncrement();
+                if (lanternFish.DaysUntilSpawn == 0)
+                {
+                    numberOfLanternFishToAdd++;
+                }
+            });
+
+            Parallel.For(0, numberOfLanternFishToAdd, index =>
+            {
+                localListOfLanternFish.Add(new LanternFish(9));
+
+            });
+            // for (int i = 0; i < numberOfLanternFishToAdd; i++)
+            // {
+            //     localListOfLanternFish.Add(new LanternFish(9));
+            // }
             
 
+            return localListOfLanternFish.ToList();
         }
 
         private static void Day5()
