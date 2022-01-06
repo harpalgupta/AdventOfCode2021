@@ -15,9 +15,39 @@ namespace AdventOfCode2021
             //Day2();
             //Day3();
             //Day4();
-            Day5();
+            // Day5();
+            Day6();
 
             Console.ReadKey();
+        }
+
+        private static void Day6()
+        {
+            var day6Input = System.IO.File.ReadAllText("Day6Input.txt");
+
+            var lanternFishes = day6Input.Split(',').Select(i=>int.Parse(i)).Select(i=>new LanternFish(i)).ToList();
+            
+            var days = 80;
+
+            for (int i = 1; i < days+1; i++)
+            {
+                var lanternFishToAdd = new List<LanternFish>();
+                foreach (var lanternFish in lanternFishes)
+                {
+                    lanternFish.DayIncrement();
+                    if (lanternFish.DaysUntilSpawn == 0)
+                    {
+                        lanternFishToAdd.Add(new LanternFish(9));
+                    }
+                }
+
+                Console.WriteLine($"day{i} {string.Join(',',lanternFishes.Select(i=>i.DaysUntilSpawn))}");
+                Console.WriteLine($"total fishes {lanternFishes.Count}");
+                lanternFishes.AddRange(lanternFishToAdd);
+
+            }
+            
+
         }
 
         private static void Day5()
