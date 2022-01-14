@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using AdventOfCode2021.Models;
 
 namespace AdventOfCode2021
@@ -26,55 +24,55 @@ namespace AdventOfCode2021
         private static void Day6()
         {
             var day6Input = System.IO.File.ReadAllText("Day6Input.txt");
+            var lanternFishes = day6Input.Split(',').Select(i => int.Parse(i)).ToList();
 
-            var lanternFishes = day6Input.Split(',').Select(i => int.Parse(i)).Select(i => new LanternFish(i)).ToList();
+            var dictonaryOfLanternFishValuesCounts = new Dictionary<int, long>();
+            
+            // set initial values for dictionary
+            for (int lanternFishValue = 0; lanternFishValue < 9; lanternFishValue++)
+            {
+                dictonaryOfLanternFishValuesCounts.Add(lanternFishValue, 0);
+                var count = lanternFishes.Count(lf => lf == lanternFishValue);
+                dictonaryOfLanternFishValuesCounts[lanternFishValue] += count;
+            }
 
             var days = 256;
 
-            var lastOutput = string.Empty;
             for (int i = 1; i < days + 1; i++)
             {
-                Console.WriteLine(i);
-                var lanternFishToAdd = LanternFishToAdd(lanternFishes);
-
-                // Console.WriteLine($"day{i} {string.Join(',', lanternFishes.Select(i => i.DaysUntilSpawn))}");
-                if (i == days)
+                // Console.WriteLine($"day{i}");
+                var tmpdictonaryOfLanternFishValuesCounts = new Dictionary<int, long>();
+                for (int lanternFishValue = 0; lanternFishValue < 9; lanternFishValue++)
                 {
-                    lastOutput= $"total fishes {lanternFishes.Count}";
-
+                    tmpdictonaryOfLanternFishValuesCounts.Add(lanternFishValue, 0);
                 }
-                lanternFishes.AddRange(lanternFishToAdd);
+
+                long numberOfZerosFromPreviousDay = dictonaryOfLanternFishValuesCounts[0];
+
+                for (int lanternFishValue = 8; lanternFishValue != -1; lanternFishValue--)
+                {
+                    if (lanternFishValue > 0)
+                    {
+                        tmpdictonaryOfLanternFishValuesCounts[lanternFishValue - 1] =
+                            dictonaryOfLanternFishValuesCounts[lanternFishValue];
+                    }
+                    else
+                    {
+                        if (numberOfZerosFromPreviousDay > 0)
+                        {
+                            tmpdictonaryOfLanternFishValuesCounts[6] += numberOfZerosFromPreviousDay;
+                            tmpdictonaryOfLanternFishValuesCounts[8] += numberOfZerosFromPreviousDay;
+                        }
+                    }
+
+                    Console.WriteLine(
+                        $"new count of {lanternFishValue} {tmpdictonaryOfLanternFishValuesCounts[lanternFishValue]}");
+                }
+
+                dictonaryOfLanternFishValuesCounts = new Dictionary<int, long>(tmpdictonaryOfLanternFishValuesCounts);
             }
 
-            Console.WriteLine(lastOutput);
-        }
-
-        private static List<LanternFish> LanternFishToAdd(List<LanternFish> lanternFishes)
-        {
-            var numberOfLanternFishToAdd = 0;
-            var localListOfLanternFish = new ConcurrentBag<LanternFish>();
-
-            Parallel.ForEach(lanternFishes, lanternFish =>
-            {
-                lanternFish.DayIncrement();
-                if (lanternFish.DaysUntilSpawn == 0)
-                {
-                    numberOfLanternFishToAdd++;
-                }
-            });
-
-            Parallel.For(0, numberOfLanternFishToAdd, index =>
-            {
-                localListOfLanternFish.Add(new LanternFish(9));
-
-            });
-            // for (int i = 0; i < numberOfLanternFishToAdd; i++)
-            // {
-            //     localListOfLanternFish.Add(new LanternFish(9));
-            // }
-            
-
-            return localListOfLanternFish.ToList();
+            Console.WriteLine(dictonaryOfLanternFishValuesCounts.Sum(lf => lf.Value));
         }
 
         private static void Day5()
