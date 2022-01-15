@@ -15,9 +15,64 @@ namespace AdventOfCode2021
             //Day2();
             //Day3();
             //Day4();
-            Day5();
+            // Day5();
+            Day6();
 
             Console.ReadKey();
+        }
+
+        private static void Day6()
+        {
+            var day6Input = System.IO.File.ReadAllText("Day6Input.txt");
+            var lanternFishes = day6Input.Split(',').Select(i => int.Parse(i)).ToList();
+
+            var dictonaryOfLanternFishValuesCounts = new Dictionary<int, long>();
+            
+            // set initial values for dictionary
+            for (int lanternFishValue = 0; lanternFishValue < 9; lanternFishValue++)
+            {
+                dictonaryOfLanternFishValuesCounts.Add(lanternFishValue, 0);
+                var count = lanternFishes.Count(lf => lf == lanternFishValue);
+                dictonaryOfLanternFishValuesCounts[lanternFishValue] += count;
+            }
+
+            var days = 256;
+
+            for (int i = 1; i < days + 1; i++)
+            {
+                // Console.WriteLine($"day{i}");
+                var tmpdictonaryOfLanternFishValuesCounts = new Dictionary<int, long>();
+                for (int lanternFishValue = 0; lanternFishValue < 9; lanternFishValue++)
+                {
+                    tmpdictonaryOfLanternFishValuesCounts.Add(lanternFishValue, 0);
+                }
+
+                long numberOfZerosFromPreviousDay = dictonaryOfLanternFishValuesCounts[0];
+
+                for (int lanternFishValue = 8; lanternFishValue != -1; lanternFishValue--)
+                {
+                    if (lanternFishValue > 0)
+                    {
+                        tmpdictonaryOfLanternFishValuesCounts[lanternFishValue - 1] =
+                            dictonaryOfLanternFishValuesCounts[lanternFishValue];
+                    }
+                    else
+                    {
+                        if (numberOfZerosFromPreviousDay > 0)
+                        {
+                            tmpdictonaryOfLanternFishValuesCounts[6] += numberOfZerosFromPreviousDay;
+                            tmpdictonaryOfLanternFishValuesCounts[8] += numberOfZerosFromPreviousDay;
+                        }
+                    }
+
+                    Console.WriteLine(
+                        $"new count of {lanternFishValue} {tmpdictonaryOfLanternFishValuesCounts[lanternFishValue]}");
+                }
+
+                dictonaryOfLanternFishValuesCounts = new Dictionary<int, long>(tmpdictonaryOfLanternFishValuesCounts);
+            }
+
+            Console.WriteLine(dictonaryOfLanternFishValuesCounts.Sum(lf => lf.Value));
         }
 
         private static void Day5()
